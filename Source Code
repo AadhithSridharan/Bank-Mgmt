@@ -1,0 +1,563 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 13 15:10:59 2020
+
+@author: Welcome
+"""
+
+#ImportFunctions
+from tkinter import *
+from tkinter import ttk
+import tkinter.messagebox
+from PIL import ImageTk,Image
+import random
+import time
+import builtins
+
+
+#MySQL Database Connection
+import mysql.connector as sqltor
+mycon = sqltor.connect(host = "localhost", user="root", password="root")
+cursor= mycon.cursor(buffered= True)
+if mycon.is_connected == False:
+    print("Error conneting to database. Try Later")
+cursor.execute("CREATE DATABASE IF NOT EXISTS BANK")
+cursor.execute("USE BANK")
+
+#MySQL Table Creation
+cursor.execute('''CREATE TABLE IF NOT EXISTS ACCOUNTS
+    (Account_no int(8) PRIMARY KEY,
+    Name char(25) NOT NULL,
+    Password varchar(20) NOT NULL,
+    Contact_no int(10),
+    Branch varchar(25),
+    Balance int(20))''')
+
+#Click Function
+def skm(*funcs):
+    def argskwargs(*args,**kwargs):
+        for f in funcs:
+            f(*args,**kwargs)
+    return argskwargs
+
+
+###################################
+
+#1. CREATE A SAVINGS BANK ACCOUNT
+
+#click1 function
+def click1():
+    global v1,v2,v3,v4,acctno
+    def call():
+        global v1,v2,v3,v4,acctno
+        v1=e1_1.get()
+        v2=e1_2.get()
+        v3=e1_3.get()
+        v4=e1_4.get()
+        acctno=random.randint(10000,100000000)
+        cursor.execute("INSERT INTO ACCOUNTS VALUES(%s,'%s','%s',%s,'%s',0)"%(acctno,v1,v4,v3,v2))
+        cursor.execute("COMMIT")
+        print('Account created successfully. Your account number is:,',acctno)
+        
+    #window1:
+    window1 = Tk()
+    window1.title("BANK MANAGEMENT SYSTEM")
+    window1.configure(background="black")
+    window1.resizable(width=False, height=False)
+    window1.geometry('1300x1850') 
+    
+    #Header1
+    Header1= Label(window1, text="YOU HAVE SELECTED 'OPEN A SAVINGS BANK ACCOUNT '", bg="black", fg="orange", font="none 12 bold", justify=CENTER)
+    Header1.place(relx=0.3,rely=0.03)
+    global e1_1,v1
+
+    #Name
+    NameLabel1=Label(window1, text="ENTER YOUR NAME :", bg="black", fg="white", font="none 12 bold")
+    NameLabel1.place(relx=0.1,rely=0.1)
+    e1_1=Entry(window1)
+    e1_1.place(relx=0.3,rely=0.1)
+
+    #BranchName
+    BranchNameLabel1=Label(window1, text="BRANCH NAME :", bg="black", fg="white", font="none 12 bold")
+    BranchNameLabel1.place(relx=0.1,rely=0.12)
+    e1_2=Entry(window1)
+    e1_2.place(relx=0.3,rely=0.12)
+    
+    #ContactNumber
+    ContactNumberLabel1=Label(window1, text="CONTACT NUMBER :", bg="black", fg="white", font="none 12 bold")
+    ContactNumberLabel1.place(relx=0.1,rely=0.14)
+    e1_3=Entry(window1)
+    e1_3.place(relx=0.3,rely=0.14)
+    
+    #Password
+    PasswordLabel1=Label(window1, text="PASSWORD :", bg="black", fg="white", font="none 12 bold")
+    PasswordLabel1.place(relx=0.1,rely=0.16)
+    e1_4=Entry(window1,show='*')
+    e1_4.place(relx=0.3,rely=0.16)
+
+    #SubmitButton
+    b1_1=Button(window1, text="SUBMIT", bg="orange", fg="black", command=skm(call,window1.destroy))
+    b1_1.place(relx=0.1, rely=0.2)
+    
+    window1.mainloop()
+
+###################
+    
+#click2 function
+def click2():
+    global v1,v2
+    def call2():
+        global v1,v2
+        v1=e2_1.get()
+        v2=e2_2.get()
+
+        cursor.execute('SELECT Name FROM Accounts WHERE Account_no=%s'%(v1))
+        name= cursor.fetchone()
+        if name==None:
+            print("Sorry,Entered account number is invalid. Kindly Try Again.")
+        else:
+            cursor.execute('UPDATE ACCOUNTS SET Balance= Balance+ %s WHERE Account_no=%s'%(v2,v1))
+            cursor.execute('COMMIT')
+            for i in name:
+                username=i
+            print('Thank you',username,',')
+            print('Rs.',v2, 'deposited to your account')
+        
+
+    #main:
+    window2 = Tk()
+    window2.title("BANK MANAGEMENT SYSTEM")
+    window2.configure(background="black")
+    window2.resizable(width=False, height=False)
+    window2.geometry('1300x1850')
+    
+    #Label
+    Header2= Label(window2, text="YOU HAVE SELECTED 'DEPOSIT MONEY '", bg="black", fg="orange", font="none 12 bold", justify=CENTER)
+    Header2.place(relx=0.3,rely=0.03)
+
+    #AcctNo
+    AcctLabel1=Label(window2, text="ENTER YOUR ACCOUNT NUMBER :", bg="black", fg="white", font="none 12 bold")
+    AcctLabel1.place(relx=0.1,rely=0.1)
+    e2_1=Entry(window2)
+    e2_1.place(relx=0.36,rely=0.1)
+
+    #Deposit Amount
+    DepamtLabel1=Label(window2, text="AMOUNT TO BE DEPOSITED :", bg="black", fg="white", font="none 12 bold")
+    DepamtLabel1.place(relx=0.1,rely=0.12)
+    e2_2=Entry(window2)
+    e2_2.place(relx=0.36,rely=0.12)
+
+    #Deposit Button
+    b2_1=Button(window2, text="DEPOSIT", bg="orange", fg="black", command=skm(call2, window2.destroy))
+    b2_1.place(relx=0.145, rely=0.2)
+    
+    window2.mainloop()
+
+###################
+
+#click3 function
+def click3():
+
+    def call3():
+        global v1,v2,v3
+        v1=e3_1.get()
+        v2=e3_2.get()
+        v3=int(e3_3.get())
+
+        cursor.execute('SELECT Name FROM Accounts WHERE Account_no=%s'%(v1))
+        name= cursor.fetchone()
+            
+        if name==None:
+            print("Sorry,Entered account number is invalid. Kindly Try Again.")
+            
+        else:
+            for h in name:
+                username=h
+            cursor.execute('SELECT Password FROM Accounts WHERE Account_no=%s'%(v1))
+            pwraw= cursor.fetchone()
+            for i in pwraw:
+                pw= i
+
+            if v2==pw:
+                cursor.execute('SELECT Balance FROM Accounts WHERE Account_no=%s'%(v1))
+                balraw= cursor.fetchone()
+                for j in balraw:
+                    bal= j
+                    bal=int(bal)
+                    
+                if v3> bal:
+                    print('''Withdrawal amount Greater than Balance.
+                    Balance is''',bal,'.')
+                    print('Select a withdrawal amount lesser than or equal to balance.')
+                else:
+                    cursor.execute('UPDATE Accounts SET Balance=Balance-%s WHERE Account_no=%s'%(v3,v1))
+                    cursor.execute('COMMIT')
+                    print('Thank you',username,',')
+                    print('Rs.',v3,'withdrawn from your account')
+            else:
+                print('Incorrect Password')
+        
+    #main:
+    window3 = Tk()
+    window3.title("BANK MANAGEMENT SYSTEM")
+    window3.configure(background="black")
+    window3.resizable(width=False, height=False)
+    window3.geometry('1300x1850')
+    
+    #Label
+    Header3= Label(window3, text="YOU HAVE SELECTED 'WITHDRAW MONEY '", bg="black", fg="orange", font="none 12 bold", justify=CENTER)
+    Header3.place(relx=0.3,rely=0.03)
+
+    #AcctNo
+    AcctLabel3=Label(window3, text="ENTER YOUR ACCOUNT NUMBER :", bg="black", fg="white", font="none 12 bold")
+    AcctLabel3.place(relx=0.1,rely=0.1)
+    e3_1=Entry(window3)
+    e3_1.place(relx=0.36,rely=0.1)
+
+    #Password
+    PWLabel3=Label(window3, text="ACCOUNT PASSWORD :", bg="black", fg="white", font="none 12 bold")
+    PWLabel3.place(relx=0.1,rely=0.12)
+    e3_2=Entry(window3, show='*',)
+    e3_2.place(relx=0.36,rely=0.12)
+
+    #Withdraw Amount
+    WDLabel3=Label(window3, text="AMOUNT TO BE WITHDRAWN :", bg="black", fg="white", font="none 12 bold")
+    WDLabel3.place(relx=0.1,rely=0.14)
+    e3_3=Entry(window3)
+    e3_3.place(relx=0.36,rely=0.14)
+
+    #Withdraw Button
+    b3_1=Button(window3, text="WITHDRAW", bg="orange", fg="black", command=skm(call3, window3.destroy))
+    b3_1.place(relx=0.16, rely=0.2)
+
+    window3.mainloop()
+
+###################
+    
+#click4 function
+def click4():
+
+    def call4():
+        global v1,v2,v3,v4
+        v1=e4_1.get()
+        v2=e4_2.get()
+        v3=e4_3.get()
+        v4=int(e4_4.get())
+
+        #get names as tuple
+        cursor.execute('SELECT Name FROM Accounts WHERE Account_no=%s'%(v1))
+        name1= cursor.fetchone()
+        cursor.execute('SELECT Name FROM Accounts WHERE Account_no=%s'%(v2))
+        name2= cursor.fetchone()
+
+        #Check if name exists
+        if name1 == None:
+            print('Sender account number is invalid. Please enter the correct number.')
+        elif name2 == None:
+            print('Receiver account number is invalid. Please enter the correct number.')
+            
+        else:
+            #names from tuple to string
+            for n1 in name1:
+                username1=n1
+            for n2 in name2:
+                username2=n2
+
+            #original password
+            cursor.execute('SELECT Password FROM Accounts WHERE Account_no=%s'%(v1))
+            pwraw= cursor.fetchone()
+            for i in pwraw:
+                pw= i
+
+            #Check PW Match
+            if pw == v3:
+                #Sender Balance
+                cursor.execute('SELECT Balance FROM Accounts WHERE Account_no=%s'%(v1))
+                balraw1= cursor.fetchone()
+                for j in balraw1:
+                    bal1= j
+                    bal1=int(bal1) 
+                cursor.execute('SELECT Balance FROM Accounts WHERE Account_no=%s'%(v2))
+                #Receiver Balance
+                balraw2= cursor.fetchone()
+                for j in balraw2:
+                    bal2= j
+                    bal2=int(bal2)
+
+                if bal1<v4:
+                    print('Amount to be transferred is more than your balance Rs.',bal1,'. Please transfer an amount lesser than balance.')
+
+                else:
+                    cursor.execute('UPDATE Accounts SET Balance=Balance-%s WHERE Account_no=%s'%(v4,v1))
+                    cursor.execute('COMMIT')
+                    cursor.execute('UPDATE Accounts SET Balance=Balance+%s WHERE Account_no=%s'%(v4,v2))
+                    cursor.execute('COMMIT')
+                    print('Rs.',v4,'transferred from',username1,'to',username2)
+            else:
+                print('Incorrect password')
+    
+    #main:
+    window4 = Tk()
+    window4.title("BANK MANAGEMENT SYSTEM")
+    window4.configure(background="black")
+    window4.resizable(width=False, height=False)
+    window4.geometry('1300x1850')
+    
+    #Header5
+    Header4= Label(window4, text="YOU HAVE SELECTED 'FUND TRANSFER '", bg="black", fg="orange", font="none 12 bold", justify=CENTER)
+    Header4.place(relx=0.3,rely=0.03)
+    
+    #SenderAcctNo
+    SenderAcctLabel4=Label(window4, text="SENDER ACCOUNT NUMBER :", bg="black", fg="white", font="none 12 bold")
+    SenderAcctLabel4.place(relx=0.1,rely=0.1)
+    e4_1=Entry(window4)
+    e4_1.place(relx=0.36,rely=0.1)
+
+    #ReceivercctNo
+    ReceiverAcctLabel4=Label(window4, text="RECEIVER ACCOUNT NUMBER :", bg="black", fg="white", font="none 12 bold")
+    ReceiverAcctLabel4.place(relx=0.1,rely=0.12)
+    e4_2=Entry(window4)
+    e4_2.place(relx=0.36,rely=0.12)
+
+    #Password
+    PWLabel4=Label(window4, text="SENDER ACCOUNT PASSWORD :", bg="black", fg="white", font="none 12 bold")
+    PWLabel4.place(relx=0.1,rely=0.14)
+    e4_3=Entry(window4, show='*',)
+    e4_3.place(relx=0.36,rely=0.14)
+
+    #Transfer Amount
+    TALabel4=Label(window4, text="AMOUNT TO BE TRANSFERRED :", bg="black", fg="white", font="none 12 bold")
+    TALabel4.place(relx=0.1,rely=0.16)
+    e4_4=Entry(window4)
+    e4_4.place(relx=0.36,rely=0.16)
+
+    #Transfer Button
+    b4_1=Button(window4, text="TRANSFER", bg="orange", fg="black", command=skm(call4, window4.destroy))
+    b4_1.place(relx=0.16, rely=0.2)
+
+    window4.mainloop()
+
+###################
+
+#click5 function
+
+def click5():
+
+    def call5(): 
+        global acctno,toln,pol,p,t,aadhaar,cs,verf
+        acctno=int(e5_1.get())
+        toln=clicked.get()
+        pol=e5_2.get()
+        p=int(e5_3.get())
+        t=int(e5_4.get())
+        mi=int(e5_5.get())
+        aadhaar=e5_6.get()
+        cs=int(e5_7.get())
+        verf=clicked2.get()
+
+        def loan(acctnox,px,r,tx,mix,csx,mcs):
+    
+            if csx<mcs:
+                print("Cibil score is insufficient. Not eligile for personal loan.")
+
+            else:
+                ta=px+(px*r*tx)
+                ma=int(ta/(tx*12))
+
+                if ma>(mix*0.33):
+                    print("Insufficient income. Please extend loan duration.")
+
+                else:
+                    print('Principal Amount:',px)
+                    print('Duration:',tx,'years')
+                    print('You need to repay a total of Rs.',ta,'at the rate of Rs.',ma,'per month')
+
+                    #Repayment Option
+                    repay=int(input('''How do you wish to repay?
+1. Cash
+2. Account Transfer
+3. Cancel Loan
+SELECT AN OPTION(1,2 or 3):'''))
+                    if repay==1:
+                        cursor.execute('UPDATE ACCOUNTS SET Balance= Balance+ %s WHERE Account_no=%s'%(px,acctnox))
+                        cursor.execute('COMMIT')
+                        print('....')
+                        print('Loan Sanctioned')
+                        print('Rs.',px,'deposited in your account. You have to pay Rs.',ma,'to the bank by cash every month.')
+                        print('THANK YOU FOR USING AATMANIRBHAR BANK')
+                        window5.destroy()
+                        
+                    elif repay==2:
+                        cursor.execute('UPDATE ACCOUNTS SET Balance= Balance+ %s WHERE Account_no=%s'%(px,acctnox))
+                        cursor.execute('COMMIT')
+                        print('....')
+                        print('Loan Sanctioned')
+                        print('Rs.',px,'deposited in your account. Rs.',ma,'will be deducted from your account every month.')
+                        print('THANK YOU FOR USING AATMANIRBHAR BANK')
+
+                        tm=tx*12
+                        for i in range(0,tm):
+                            time.sleep(2592000)
+                            cursor.execute('UPDATE ACCOUNTS SET Balance= Balance- %s WHERE Account_no=%s'%(ma,acctnox))
+                            cursor.execute('COMMIT')
+                            window5.destroy()
+
+                    elif repay==3:
+                        print('Loan Cancelled. Thank you.')
+                        window5.destroy()
+                        
+                    else:
+                        print('Please enter a valid option')
+                        window5.destroy()
+
+        #get names as tuple
+        cursor.execute('SELECT Name FROM Accounts WHERE Account_no=%s'%(acctno))
+        name1= cursor.fetchone()
+
+        #Check if name exists
+        if name1 == None:
+            print('Your account number is invalid. Please enter the correct number.')
+
+        #if account exists
+        else:
+            if verf=="No":
+                print("Please submit proper income, tax and collateral documents.")
+            else:
+
+                #Personal Loan
+                if toln=="Personal Loan":
+                    loan(acctno,p,0.09,t,mi,cs,650)
+                elif toln=="Vehicle Loan":
+                    loan(acctno,p,0.11,t,mi,cs,750)
+                elif toln=="Educational Loan":
+                    loan(acctno,p,0.08,t,mi,cs,670)
+                elif toln=="Business Loan":
+                    loan(acctno,p,0.11,t,mi,cs,750)
+                else:
+                    loan(acctno,p,0.07,t,mi,cs,650)
+
+                                
+    #main
+    window5 = Tk()
+    window5.title("BANK MANAGEMENT SYSTEM")
+    window5.configure(background="black")
+    window5.resizable(width=False, height=False)
+    window5.geometry('1300x1850') 
+    
+    #Header5
+    Header5= Label(window5, text="YOU HAVE SELECTED 'AVAIL LOAN'", bg="black", fg="orange", font="none 12 bold", justify=CENTER)
+    Header5.place(relx=0.3,rely=0.03)
+
+    #AcctNo
+    AcctLabel5=Label(window5, text="ENTER YOUR ACCOUNT NUMBER :", bg="black", fg="white", font="none 12 bold")
+    AcctLabel5.place(relx=0.1,rely=0.1)
+    e5_1=Entry(window5)
+    e5_1.place(relx=0.36,rely=0.1)
+
+    #TypeOfLoan
+    TolnLabel5=Label(window5, text="ENTER THE TYPE OF LOAN :", bg="black", fg="white", font="none 12 bold")
+    TolnLabel5.place(relx=0.1,rely=0.12 )
+    
+    clicked= StringVar()
+    clicked.set("Personal Loan")
+    toln= OptionMenu(window5, clicked, "Personal Loan", "Vehicle Loan", "Educational Loan", "Business Loan", "Home Loan")
+    toln.place(relx=0.36,rely=0.12)
+
+    #PurposeOfLoan
+    polLabel5=Label(window5, text="PURPOSE OF LOAN :", bg="black", fg="white", font="none 12 bold")
+    polLabel5.place(relx=0.1,rely=0.14)
+    e5_2=Entry(window5)
+    e5_2.place(relx=0.36,rely=0.14)
+
+    #PrincipalValue
+    PrincipalLabel5=Label(window5, text="PRINCIPAL AMOUNT :", bg="black", fg="white", font="none 12 bold")
+    PrincipalLabel5.place(relx=0.1,rely=0.16)
+    global e5_3
+    e5_3=Entry(window5)
+    e5_3.place(relx=0.36,rely=0.16)
+
+    #TimePeriod
+    TpLabel5=Label(window5, text="TIME PERIOD(years) :", bg="black", fg="white", font="none 12 bold")
+    TpLabel5.place(relx=0.1,rely=0.18)
+    e5_4=Entry(window5)
+    e5_4.place(relx=0.36,rely=0.18)
+
+    #MonthlyIncome
+    miLabel5=Label(window5, text="ENTER MONTHLY INCOME :", bg="black", fg="white", font="none 12 bold")
+    miLabel5.place(relx=0.1,rely=0.2)
+    e5_5=Entry(window5)
+    e5_5.place(relx=0.36,rely=0.2)    
+
+    #AadhaarNumber
+    AadhaarLabel5=Label(window5, text="ENTER YOUR AADHAAR NUMBER:", bg="black", fg="white", font="none 12 bold")
+    AadhaarLabel5.place(relx=0.1,rely=0.22)
+    e5_6=Entry(window5)
+    e5_6.place(relx=0.36,rely=0.22)
+
+    #CreditScore
+    CsLabel5=Label(window5, text="CIBIL SCORE :", bg="black", fg="white", font="none 12 bold")
+    CsLabel5.place(relx=0.1,rely=0.24)
+    e5_7=Entry(window5)
+    e5_7.place(relx=0.36,rely=0.24)
+
+    #Verification
+    VLabel5=Label(window5, text="ALL TAX,INCOME DOCUMENTS, COLLATERAL VERIFIED (to be filled by branch manager):", bg="black", fg="white", font="none 12 bold")
+    VLabel5.place(relx=0.1,rely=0.26 )
+    
+    clicked2= StringVar()
+    clicked2.set("No")
+    verification= OptionMenu(window5, clicked2, "No","Yes")
+    verification.place(relx=0.6,rely=0.28)
+
+    #SubmitButton1
+    b5_1=Button(window5, text="SUBMIT", bg="orange", fg="black", command=call5)
+    b5_1.place(relx=0.16, rely=0.3)
+
+    window5.mainloop()
+
+###################
+    
+    
+#main:
+windowmain = Tk()
+windowmain.title("BANK MANAGEMENT SYSTEM")
+windowmain.configure(background="black")
+windowmain.resizable(width=False, height=False)
+windowmain.geometry('1280x680')
+tkinter.messagebox.showinfo(title='Aatmanirbhar Bank', message=('''BANK MANAGEMENT SOFTWARE.
+PROGRAMMED BY: AADHITH M.
+TO RUN THE SOFTWARE, PRESS OKAY.
+TO EXIT, PRESS THE RED CROSS'''))
+#Background Image
+my_image= ImageTk.PhotoImage(Image.open('C:\\Users\\user\\Desktop\\AADHITH\\VNPS\\BANK MGMT\\bank img 3.jpg'))
+bg= Label(windowmain,image=my_image)
+bg.place(relx=0.0, rely=0.0)
+
+#Label
+a= Label(windowmain, text='''1. OPEN A SAVINGS BANK ACCOUNT
+2. DEPOSIT MONEY
+3. WITHDRAW MONEY
+4. FUND TRANSFER
+5. AVAIL LOAN''',bg="black", fg="white", font="compacto 17 bold", justify="left")
+a.place(relx=0.05, rely=0.23)
+
+b= Label(windowmain,bg="black",fg="white", text="SELECT A NUMBER :", font="compact 20 bold")
+b.place(relx=0.3, rely=0.38)
+
+#relief=groove,raise,sunken,solid,ridge,flat
+b1=Button(windowmain,bg='firebrick2',fg='white',relief='groove', text="1", font="compacto 14 bold", command=skm(windowmain.destroy,click1))
+b1.place(relx=0.55, rely=0.375)
+b2=Button(windowmain,bg='firebrick2',fg='white',relief='groove', text="2", font="compacto 14 bold", command=skm(windowmain.destroy,click2))
+b2.place(relx=0.6, rely=0.375)
+b3=Button(windowmain,bg='firebrick2',fg='white',relief='groove', text="3", font="compacto 14 bold", command=skm(windowmain.destroy,click3))
+b3.place(relx=0.65, rely=0.375)
+b4=Button(windowmain,bg='firebrick2',fg='white',relief='groove', text="4", font="compacto 14 bold", command=skm(windowmain.destroy,click4))
+b4.place(relx=0.7, rely=0.375)
+b5=Button(windowmain,bg='firebrick2',fg='white',relief='groove', text="5", font="compacto 14 bold", command=skm(windowmain.destroy,click5))
+b5.place(relx=0.75, rely=0.375)
+
+windowmain.mainloop()
+
+###############
+## THANK YOU ##
+###############
