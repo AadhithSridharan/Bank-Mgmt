@@ -4,3 +4,4 @@ Features to create bank account, deposit, withdraw and transfer funds, avail dif
 My 12th grade major project.
 
 ![image](https://github.com/AadhithSridharan/Bank-Mgmt/assets/110449462/5d1b0871-ec6c-4320-a673-ae1402a3614b)
+![image](https://github.com/AadhithSridharan/Bank-Mgmt/assets/110449462/95eaec5a-f676-4b84-a3dc-51ff63d84439)
